@@ -107,5 +107,6 @@ dist
 
 import/
 conf/
+data/
 
 .DS_Store
