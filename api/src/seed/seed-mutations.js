@@ -1,91 +1,72 @@
-const fetch = require('node-fetch')
 const parse = require('csv-parse/lib/sync')
 const { gql } = require('@apollo/client')
+const fs = require('fs')
+const path = require('path')
 
-export const getSeedMutations = async () => {
-  const res = await fetch(
-    'https://cdn.neo4jlabs.com/data/grandstack_businesses.csv'
-  )
-  const body = await res.text()
-  const records = parse(body, { columns: true })
-  const mutations = generateMutations(records)
-
+export const getMutations = () => {
+  let mutations = [...getSeedMutations(), getEnvironmentMutations()]
   return mutations
 }
 
-const generateMutations = (records) => {
-  return records.map((rec) => {
-    Object.keys(rec).map((k) => {
-      if (k === 'latitude' || k === 'longitude' || k === 'reviewStars') {
-        rec[k] = parseFloat(rec[k])
-      } else if (k === 'reviewDate') {
-        const dateParts = rec[k].split('-')
-        rec['year'] = parseInt(dateParts[0])
-        rec['month'] = parseInt(dateParts[1])
-        rec['day'] = parseInt(dateParts[2])
-      } else if (k === 'categories') {
-        rec[k] = rec[k].split(',')
-      }
-    })
+const getSeedMutations = () => {
+  try {
+    const filePath = path.resolve(__dirname, 'clicks_hour_000.csv')
+    const data = fs.readFileSync(filePath, 'utf8')
+    const clicks = parse(data, { columns: true })
+    const mutations = generateInstancesMutations(clicks)
+    return mutations
+  } catch (err) {
+    console.error(err)
+  }
+}
 
+const generateInstancesMutations = (clicks) => {
+  return clicks.map((click) => {
     return {
       mutation: gql`
         mutation mergeReviews(
-          $userId: ID!
-          $userName: String!
-          $businessId: ID!
-          $businessName: String!
-          $businessCity: String!
-          $businessState: String!
-          $businessAddress: String!
-          $latitude: Float!
-          $longitude: Float!
-          $reviewId: ID!
-          $reviewText: String
-          $reviewDate: DateTime
-          $reviewStars: Float
-          $categories: [String!]!
+          $user_id: ID!
+          $session_id: ID!
+          $session_start: String
         ) {
-          user: mergeUser(userId: $userId, name: $userName) {
+          usuario: mergeUsuario(userId: $user_id) {
             userId
           }
-          business: mergeBusiness(
-            businessId: $businessId
-            name: $businessName
-            address: $businessAddress
-            city: $businessCity
-            state: $businessState
-            latitude: $latitude
-            longitude: $longitude
+          session: mergeSession(
+            sessionId: $session_id
+            sessionStart: $session_start
           ) {
-            businessId
+            sessionId
           }
-
-          businessCategories: mergeBusinessCategory(
-            categories: $categories
-            businessId: $businessId
+          sessionUsuario: mergeSessionUsuario(
+            sessionId: $session_id
+            userId: $user_id
           ) {
-            businessId
-          }
-
-          reviews: createReviews(
-            input: {
-              reviewId: $reviewId
-              stars: $reviewStars
-              text: $reviewText
-              date: $reviewDate
-              business: { connect: { where: { businessId: $businessId } } }
-              user: { connect: { where: { userId: $userId } } }
-            }
-          ) {
-            reviews {
-              reviewId
-              date
-            }
+            userId
           }
         }
       `,
-      variables: rec,
+      variables: click,
     }
   })
+}
+
+const getEnvironmentMutations = () => {
+  return {
+    mutation: gql`
+      mutation mergeEnvironments($click_environment: ID!, $name: String) {
+        environment: mergeEnvironment(
+          environmentId: $click_environment
+          name: $name
+        ) {
+          environmentId
+          name
+        }
+      }
+    `,
+    variables: {
+      click_environment: '4',
+      name: 'Web',
+    },
+  }
 }

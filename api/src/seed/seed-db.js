@@ -1,7 +1,7 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import dotenv from 'dotenv'
 import fetch from 'node-fetch'
-import { getSeedMutations } from './seed-mutations'
+import { getMutations } from './seed-mutations'
 
 dotenv.config()
 
@@ -19,7 +19,7 @@ const client = new ApolloClient({
 })
 
 const runMutations = async () => {
-  const mutations = await getSeedMutations()
+  const mutations = getMutations()
 
   return Promise.all(
     mutations.map(({ mutation, variables }) => {
@@ -29,6 +29,8 @@ const runMutations = async () => {
           variables,
         })
         .catch((e) => {
+          console.log('SEJA FELIZ')
+          console.log(JSON.stringify(e, null, 2))
           throw new Error(e)
         })
     })
