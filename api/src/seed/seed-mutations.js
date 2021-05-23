@@ -4,16 +4,30 @@ const fs = require('fs')
 const path = require('path')
 
 export const getMutations = () => {
-  let mutations = [...getSeedMutations()]
+  let mutations = []
+  mutations = [...getArticlesMutations()]
+  mutations = [...mutations, ...getClicksMutations()]
   return mutations
 }
 
-const getSeedMutations = () => {
+const getClicksMutations = () => {
   try {
     const filePath = path.resolve(__dirname, 'clicks_hour_000.csv')
     const data = fs.readFileSync(filePath, 'utf8')
     const clicks = parse(data, { columns: true })
     const mutations = generateInstancesMutations(clicks)
+    return mutations
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const getArticlesMutations = () => {
+  try {
+    const filePath = path.resolve(__dirname, 'articles_metadata.csv')
+    const data = fs.readFileSync(filePath, 'utf8')
+    const articles = parse(data, { columns: true })
+    const mutations = generateMetadataMutations(articles)
     return mutations
   } catch (err) {
     console.error(err)
@@ -80,6 +94,41 @@ const generateInstancesMutations = (clicks) => {
         }
       `,
       variables: click,
+    }
+  })
+}
+
+const generateMetadataMutations = (articles) => {
+  return articles.map((article) => {
+    article['words_count'] = parseInt(article['words_count'])
+    console.log('article:', article)
+    return {
+      mutation: gql`
+        mutation mergeReviews(
+          $article_id: ID!
+          $category_id: ID!
+          $words_count: Int
+        ) {
+          article: mergeDetailedArticle(
+            articleId: $article_id
+            wordsCount: $words_count
+          ) {
+            articleId
+          }
+
+          category: mergeCategory(categoryId: $category_id) {
+            categoryId
+          }
+
+          articleCategory: mergeArticleCategory(
+            articleId: $article_id
+            categoryId: $category_id
+          ) {
+            articleId
+          }
+        }
+      `,
+      variables: article,
     }
   })
 }

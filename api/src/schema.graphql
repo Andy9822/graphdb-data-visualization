@@ -11,9 +11,14 @@ type Session {
   sessionStart: Int
 }
 
+type Category {
+  categoryId: ID!
+}
+
 type Article {
   articleId: ID!
-  wordsCount: Int
+  words: Int
+  category: Category @relationship(type: "MEMBRO_DE", direction: OUT)
 }
 
 type Environment {
@@ -48,6 +53,28 @@ type Mutation {
       statement: """
       MERGE (u:Usuario {userId: $userId})
       RETURN u
+      """
+    )
+  mergeCategory(categoryId: ID!): Category
+    @cypher(
+      statement: """
+      MERGE (c:Category {categoryId: $categoryId})
+      RETURN c
+      """
+    )
+  mergeArticle(articleId: ID!): Article
+    @cypher(
+      statement: """
+      MERGE (a:Article {articleId: $articleId})
+      RETURN a
+      """
+    )
+  mergeDetailedArticle(articleId: ID!, wordsCount: Int): Article
+    @cypher(
+      statement: """
+      MERGE (a:Article {articleId: $articleId})
+      SET a.words = $wordsCount
+      RETURN a
       """
     )
   mergeOS(osId: ID!): OS
@@ -91,6 +118,12 @@ type Mutation {
     @cypher(
       statement: "MATCH (u:Usuario {userId: $userId}) MERGE (s:Session{sessionId: $sessionId}) MERGE (s)-[:REALIZADA_POR]->(u) RETURN u"
     )
+
+  mergeArticleCategory(articleId: ID!, categoryId: ID!): Article
+    @cypher(
+      statement: "MATCH (a:Article {articleId: $articleId}) MERGE (c:Category{categoryId: $categoryId}) MERGE (a)-[:FAZ_PARTE_DE]->(c) RETURN a"
+    )
+
   mergeEnvironment(environmentId: ID!): Environment
     @cypher(
       statement: """
@@ -119,5 +152,7 @@ type Query {
 # CREATE CONSTRAINT ON (s:Session) ASSERT s.sessionId IS UNIQUE;
 # CREATE CONSTRAINT ON (c:Country) ASSERT c.countryId IS UNIQUE;
 # CREATE CONSTRAINT ON (d:Device) ASSERT d.deviceId IS UNIQUE;
+# CREATE CONSTRAINT ON (a:Article) ASSERT a.articleId IS UNIQUE;
+# CREATE CONSTRAINT ON (c:Category) ASSERT c.categoryId IS UNIQUE;
 
 # MATCH p = (c:Click)-[r]->(o:OS) RETURN *
