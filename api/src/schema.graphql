@@ -11,9 +11,35 @@ type Session {
   sessionStart: Int
 }
 
+type Article {
+  articleId: ID!
+  wordsCount: Int
+}
+
 type Environment {
   environmentId: ID!
   name: String
+}
+
+type Country {
+  countryId: ID!
+}
+
+type Device {
+  deviceId: ID!
+}
+
+type OS {
+  osId: ID!
+  name: String
+}
+
+type Click {
+  environment: Environment @relationship(type: "VIA_CHANNEL", direction: OUT)
+  os: OS @relationship(type: "COM", direction: OUT)
+  session: Session @relationship(type: "PERTENCENTE_A", direction: OUT)
+  country: Country @relationship(type: "DESDE", direction: OUT)
+  device: Device @relationship(type: "EM", direction: OUT)
 }
 
 type Mutation {
@@ -22,6 +48,35 @@ type Mutation {
       statement: """
       MERGE (u:Usuario {userId: $userId})
       RETURN u
+      """
+    )
+  mergeOS(osId: ID!): OS
+    @cypher(
+      statement: """
+      MERGE (o:OS {osId: $osId})
+      RETURN o
+      """
+    )
+  mergeCountry(countryId: ID!): Country
+    @cypher(
+      statement: """
+      MERGE (c:Country {countryId: $countryId})
+      RETURN c
+      """
+    )
+  mergeDevice(deviceId: ID!): Device
+    @cypher(
+      statement: """
+      MERGE (d:Device {deviceId: $deviceId})
+      RETURN d
+      """
+    )
+  mergeArticle(articleId: ID!, wordsCount: Int): Article
+    @cypher(
+      statement: """
+      MERGE (a:Article {articleId: $articleId})
+      ON CREATE SET a.wordsCount = $wordsCount
+      RETURN a
       """
     ) 
   mergeSession(sessionId: ID!, sessionStart: String): Session
@@ -36,11 +91,18 @@ type Mutation {
     @cypher(
       statement: "MATCH (u:Usuario {userId: $userId}) MERGE (s:Session{sessionId: $sessionId}) MERGE (s)-[:REALIZADA_POR]->(u) RETURN u"
     )
-  mergeEnvironment(environmentId: ID!, name: String): Environment
-  @cypher(
+  mergeEnvironment(environmentId: ID!): Environment
+    @cypher(
       statement: """
       MERGE (e:Environment {environmentId: $environmentId})
-      ON CREATE SET e.name = $name
+      RETURN e
+      """
+    )
+  detailEnvironment(environmentId: ID!, name: String): Environment
+    @cypher(
+      statement: """
+      MERGE (e:Environment {environmentId: $environmentId})
+      SET e.name = $name
       RETURN e
       """
     )
@@ -49,3 +111,13 @@ type Mutation {
 type Query {
   userCount: Int! @cypher(statement: "MATCH (u:User) RETURN COUNT(u)")
 }
+
+
+# CREATE CONSTRAINT ON (u:Usuario) ASSERT u.userId IS UNIQUE;
+# CREATE CONSTRAINT ON (o:OS) ASSERT o.osId IS UNIQUE;
+# CREATE CONSTRAINT ON (e:Environment) ASSERT e.environmentId IS UNIQUE;
+# CREATE CONSTRAINT ON (s:Session) ASSERT s.sessionId IS UNIQUE;
+# CREATE CONSTRAINT ON (c:Country) ASSERT c.countryId IS UNIQUE;
+# CREATE CONSTRAINT ON (d:Device) ASSERT d.deviceId IS UNIQUE;
+
+# MATCH p = (c:Click)-[r]->(o:OS) RETURN *

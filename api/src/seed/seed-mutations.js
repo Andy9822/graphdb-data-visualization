@@ -4,7 +4,7 @@ const fs = require('fs')
 const path = require('path')
 
 export const getMutations = () => {
-  let mutations = [...getSeedMutations(), getEnvironmentMutations()]
+  let mutations = [...getSeedMutations()]
   return mutations
 }
 
@@ -27,6 +27,10 @@ const generateInstancesMutations = (clicks) => {
         mutation mergeReviews(
           $user_id: ID!
           $session_id: ID!
+          $click_environment: ID!
+          $click_os: ID!
+          $click_country: ID!
+          $click_deviceGroup: ID!
           $session_start: String
         ) {
           usuario: mergeUsuario(userId: $user_id) {
@@ -38,11 +42,40 @@ const generateInstancesMutations = (clicks) => {
           ) {
             sessionId
           }
+          os: mergeOS(osId: $click_os) {
+            osId
+          }
+          country: mergeCountry(countryId: $click_country) {
+            countryId
+          }
+          device: mergeDevice(deviceId: $click_deviceGroup) {
+            deviceId
+          }
+          environment: mergeEnvironment(environmentId: $click_environment) {
+            environmentId
+          }
           sessionUsuario: mergeSessionUsuario(
             sessionId: $session_id
             userId: $user_id
           ) {
             userId
+          }
+          clicks: createClicks(
+            input: {
+              environment: {
+                connect: { where: { environmentId: $click_environment } }
+              }
+              os: { connect: { where: { osId: $click_os } } }
+              session: { connect: { where: { sessionId: $session_id } } }
+              country: { connect: { where: { countryId: $click_country } } }
+              device: { connect: { where: { deviceId: $click_deviceGroup } } }
+            }
+          ) {
+            clicks {
+              os {
+                name
+              }
+            }
           }
         }
       `,
