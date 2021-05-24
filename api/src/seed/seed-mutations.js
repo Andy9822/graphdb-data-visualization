@@ -45,6 +45,7 @@ const generateInstancesMutations = (clicks) => {
           $click_os: ID!
           $click_country: ID!
           $click_deviceGroup: ID!
+          $click_article_id: ID!
           $session_start: String
         ) {
           usuario: mergeUsuario(userId: $user_id) {
@@ -83,6 +84,7 @@ const generateInstancesMutations = (clicks) => {
               session: { connect: { where: { sessionId: $session_id } } }
               country: { connect: { where: { countryId: $click_country } } }
               device: { connect: { where: { deviceId: $click_deviceGroup } } }
+              article: { connect: { where: { articleId: $click_article_id } } }
             }
           ) {
             clicks {

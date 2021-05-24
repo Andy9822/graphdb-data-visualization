@@ -45,6 +45,7 @@ type Click {
   session: Session @relationship(type: "PERTENCENTE_A", direction: OUT)
   country: Country @relationship(type: "DESDE", direction: OUT)
   device: Device @relationship(type: "EM", direction: OUT)
+  article: Article @relationship(type: "ACESSOU", direction: OUT)
 }
 
 type Mutation {
