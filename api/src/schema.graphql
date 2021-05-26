@@ -32,6 +32,7 @@ type Country {
 
 type Device {
   deviceId: ID!
+  name: String
 }
 
 type OS {
@@ -132,6 +133,25 @@ type Mutation {
       RETURN e
       """
     )
+  
+  detailDevice(deviceId: ID!, name: String): Device
+    @cypher(
+      statement: """
+      MERGE (d:Device {deviceId: $deviceId})
+      SET d.name = $name
+      RETURN d
+      """
+    )
+
+  detailOS(osId: ID!, name: String): OS
+    @cypher(
+      statement: """
+      MERGE (o:OS {osId: $osId})
+      SET o.name = $name
+      RETURN o
+      """
+    )
+  
   detailEnvironment(environmentId: ID!, name: String): Environment
     @cypher(
       statement: """

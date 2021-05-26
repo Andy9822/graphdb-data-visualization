@@ -2,11 +2,15 @@ const parse = require('csv-parse/lib/sync')
 const { gql } = require('@apollo/client')
 const fs = require('fs')
 const path = require('path')
+import { envs, devices, os } from './constants'
 
 export const getMutations = () => {
   let mutations = []
   mutations = [...getArticlesMutations()]
   mutations = [...mutations, ...getClicksMutations()]
+  mutations = [...mutations, ...getEnvironmentMutations()]
+  mutations = [...mutations, ...getDevicesMutations()]
+  mutations = [...mutations, ...getOSMutations()]
   return mutations
 }
 
@@ -136,21 +140,58 @@ const generateMetadataMutations = (articles) => {
 }
 
 const getEnvironmentMutations = () => {
-  return {
-    mutation: gql`
-      mutation mergeEnvironments($click_environment: ID!, $name: String) {
-        environment: mergeEnvironment(
-          environmentId: $click_environment
-          name: $name
-        ) {
-          environmentId
-          name
+  return envs.map(({ index, name }) => {
+    return {
+      mutation: gql`
+        mutation updateEnvironment($index: ID!, $name: String) {
+          environment: detailEnvironment(environmentId: $index, name: $name) {
+            environmentId
+            name
+          }
         }
-      }
-    `,
-    variables: {
-      click_environment: '4',
-      name: 'Web',
-    },
-  }
+      `,
+      variables: {
+        index,
+        name,
+      },
+    }
+  })
+}
+
+const getDevicesMutations = () => {
+  return devices.map(({ index, name }) => {
+    return {
+      mutation: gql`
+        mutation updateDevice($index: ID!, $name: String) {
+          device: detailDevice(deviceId: $index, name: $name) {
+            deviceId
+            name
+          }
+        }
+      `,
+      variables: {
+        index,
+        name,
+      },
+    }
+  })
+}
+
+const getOSMutations = () => {
+  return os.map(({ index, name }) => {
+    return {
+      mutation: gql`
+        mutation updateOS($index: ID!, $name: String) {
+          os: detailOS(osId: $index, name: $name) {
+            osId
+            name
+          }
+        }
+      `,
+      variables: {
+        index,
+        name,
+      },
+    }
+  })
 }
