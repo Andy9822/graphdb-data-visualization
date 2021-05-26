@@ -4,6 +4,5 @@ services-up:
 	-open http://localhost:7474/browser/
 	-xdg-open http://localhost:7474/browser/
 
-
 services-down:
 	docker-compose down
