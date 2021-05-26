@@ -21,20 +21,15 @@ const client = new ApolloClient({
 const runMutations = async () => {
   const mutations = getMutations()
 
-  return Promise.all(
-    mutations.map(({ mutation, variables }) => {
-      return client
-        .mutate({
-          mutation,
-          variables,
-        })
-        .catch((e) => {
-          console.log('SEJA FELIZ')
-          console.log(JSON.stringify(e, null, 2))
-          throw new Error(e)
-        })
-    })
-  )
+  mutations.map(async ({ mutation, variables }) => {
+    try {
+      await client.mutate({ mutation, variables })
+    } catch (error) {
+      console.log('SEJA FELIZ')
+      console.log(JSON.stringify(error, null, 2))
+      throw new Error(error)
+    }
+  })
 }
 
 runMutations()

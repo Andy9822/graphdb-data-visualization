@@ -16,7 +16,7 @@ export const getMutations = () => {
 
 const getClicksMutations = () => {
   try {
-    const filePath = path.resolve(__dirname, 'clicks_hour_000.csv')
+    const filePath = path.resolve(__dirname, 'merged_cliks.csv')
     const data = fs.readFileSync(filePath, 'utf8')
     const clicks = parse(data, { columns: true })
     const mutations = generateInstancesMutations(clicks)
