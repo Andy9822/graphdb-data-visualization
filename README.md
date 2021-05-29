@@ -18,7 +18,7 @@ The have a local script to seed the database with a sample of the entire dataset
 
 Its valid to mention that in case of being the first time running the project and for configuring de database constraints and internal rules, it's necessary to run the `Setup Constraints` script in Neo4j Browser (explained in the next section how to import and run scripts). 
 Example below:
-![](./assets/constraints.gif)
+![](./assets/setup_constraints.gif)
 
 # Executing
 Once having the services running by `docker-compose` we just need to open http://localhost:7474/browser/ in a browser.
