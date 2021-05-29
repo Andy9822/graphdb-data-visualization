@@ -166,14 +166,3 @@ type Query {
   userCount: Int! @cypher(statement: "MATCH (u:User) RETURN COUNT(u)")
 }
 
-
-# CREATE CONSTRAINT ON (u:Usuario) ASSERT u.userId IS UNIQUE;
-# CREATE CONSTRAINT ON (o:OS) ASSERT o.osId IS UNIQUE;
-# CREATE CONSTRAINT ON (e:Environment) ASSERT e.environmentId IS UNIQUE;
-# CREATE CONSTRAINT ON (s:Session) ASSERT s.sessionId IS UNIQUE;
-# CREATE CONSTRAINT ON (c:Country) ASSERT c.countryId IS UNIQUE;
-# CREATE CONSTRAINT ON (d:Device) ASSERT d.deviceId IS UNIQUE;
-# CREATE CONSTRAINT ON (a:Article) ASSERT a.articleId IS UNIQUE;
-# CREATE CONSTRAINT ON (c:Category) ASSERT c.categoryId IS UNIQUE;
-
-# MATCH p = (c:Click)-[r]->(o:OS) RETURN *

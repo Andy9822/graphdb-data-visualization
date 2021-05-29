@@ -1,3 +1,10 @@
+PROJECT_PATH := ./
+API_PATH := ./api
+
+install:
+	@yarn install --prefix $(PROJECT_PATH)
+	@yarn install --prefix $(API_PATH)
+
 services-up:
 	docker-compose up -d
 	sleep 16
